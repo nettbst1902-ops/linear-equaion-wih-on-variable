@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>สื่อการสอนคณิตศาสตร์ ม.1: สมการเชิงเส้นตัวแปรเดียว</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Prompt -->
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        prompt: ['Prompt', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            blue: '#4F46E5',
+                            teal: '#0D9488',
+                            orange: '#F97316',
+                            pink: '#EC4899',
+                            bg: '#F0F9FF',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Prompt', sans-serif;
+            background-color: #F0F9FF;
+        }
+        /* Custom Smooth Transitions */
+        .scale-arm {
+            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-origin: 200px 140px;
+        }
+        .left-pan, .right-pan {
+            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        /* Custom Slider Styling */
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 24px;
+            width: 24px;
+            border-radius: 50%;
+            background: #4F46E5;
+            cursor: pointer;
+            box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.4);
+            transition: transform 0.1s ease-in-out;
+        }
+        input[type=range]::-webkit-slider-thumb:hover {
+            transform: scale(1.15);
+        }
+    </style>
+</head>
+<body class="text-slate-800 min-h-screen pb-12">
+
+    <!-- Header / Navbar -->
+    <header class="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 text-white py-6 px-4 shadow-lg mb-8">
+        <div class="max-w-5xl mx-auto text-center">
+            <span class="bg-white/20 text-xs md:text-sm px-3 py-1 rounded-full font-medium tracking-wide uppercase">คณิตศาสตร์ ชั้นมัธยมศึกษาปีที่ 1</span>
+            <h1 class="text-2xl md:text-4xl font-bold mt-2">สมการเชิงเส้นตัวแปรเดียว</h1>
+            <p class="text-indigo-100 mt-1 text-sm md:text-base">เรียนรู้การหาคำตอบของสมการด้วย "วิธีลองแทนค่าตัวแปร" (Trial and Error Method)</p>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-5xl mx-auto px-4 space-y-8">
+
+        <!-- Section 1: Interactive Balance Scale Playground -->
+        <section class="bg-white rounded-3xl shadow-md border border-slate-100 overflow-hidden">
+            <div class="bg-indigo-50 px-6 py-4 border-b border-indigo-100 flex flex-wrap justify-between items-center gap-4">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-scale-balanced text-indigo-600 text-xl"></i>
+                    <h2 class="text-lg font-bold text-indigo-950">กิจกรรมที่ 1: ตราชั่งสมการเรียลไทม์</h2>
+                </div>
+                <!-- Preset Equation Selector -->
+                <div class="flex items-center gap-2 w-full sm:w-auto">
+                    <label for="eqSelect" class="text-sm font-semibold text-slate-700 whitespace-nowrap">เลือกสมการตัวอย่าง:</label>
+                    <select id="eqSelect" class="bg-white border border-indigo-200 text-indigo-900 font-bold rounded-xl px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm w-full sm:w-auto shadow-sm">
+                        <option value="0">2x + 3 = 11</option>
+                        <option value="1">3x - 4 = 5</option>
+                        <option value="2">15 - x = 8</option>
+                        <option value="3">4x + 2 = 18</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="p-6 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+                
+                <!-- SVG Balance Scale Display (Left Side / Top on Mobile) -->
+                <div class="lg:col-span-7 flex flex-col items-center justify-center bg-slate-50 rounded-2xl p-4 border border-slate-100 min-h-[320px] relative">
+                    
+                    <!-- SVG Visual -->
+                    <svg viewBox="0 0 400 300" class="w-full max-w-[380px] h-auto drop-shadow-md">
+                        <!-- Base Stand -->
+                        <polygon points="170,280 230,280 210,140 190,140" fill="#64748B" />
+                        <rect x="150" y="275" width="100" height="15" rx="5" fill="#475569" />
+                        <!-- Pivot Point -->
+                        <circle cx="200" cy="140" r="12" fill="#334155" />
+                        <circle cx="200" cy="140" r="5" fill="#F8FAFC" />
+
+                        <!-- Rotating Beam Group -->
+                        <g id="scaleArm" class="scale-arm">
+                            <!-- Horizontal Beam -->
+                            <rect x="40" y="135" width="320" height="10" rx="3" fill="#0D9488" />
+                            <!-- Center Indicator Pin -->
+                            <polygon points="200,135 195,115 205,115" fill="#EF4444" />
+                            
+                            <!-- Left Strings & Pan Attachment Point (x: 60) -->
+                            <line x1="60" y1="140" x2="60" y2="180" stroke="#94A3B8" stroke-width="2" />
+                            <line x1="60" y1="140" x2="20" y2="180" stroke="#CBD5E1" stroke-width="1.5" />
+                            <line x1="60" y1="140" x2="100" y2="180" stroke="#CBD5E1" stroke-width="1.5" />
+                            
+                            <!-- Right Strings & Pan Attachment Point (x: 340) -->
+                            <line x1="340" y1="140" x2="340" y2="180" stroke="#94A3B8" stroke-width="2" />
+                            <line x1="340" y1="140" x2="300" y2="180" stroke="#CBD5E1" stroke-width="1.5" />
+                            <line x1="340" y1="140" x2="380" y2="180" stroke="#CBD5E1" stroke-width="1.5" />
+                        </g>
+
+                        <!-- Left Pan (Translates with arm rotation) -->
+                        <g id="leftPan" class="left-pan">
+                            <path d="M 10 180 L 110 180 L 95 200 L 25 200 Z" fill="#38BDF8" rx="2" />
+                            <!-- Left Pan Box Badge -->
+                            <rect x="20" y="145" width="80" height="32" rx="8" fill="#0284C7" />
+                            <text x="60" y="166" font-family="Prompt" font-size="14" font-weight="bold" fill="#FFFFFF" text-anchor="middle" id="svgLhsText">LHS: 0</text>
+                        </g>
+
+                        <!-- Right Pan (Translates with arm rotation) -->
+                        <g id="rightPan" class="right-pan">
+                            <path d="M 290 180 L 390 180 L 375 200 L 305 200 Z" fill="#F472B6" rx="2" />
+                            <!-- Right Pan Box Badge -->
+                            <rect x="300" y="145" width="80" height="32" rx="8" fill="#DB2777" />
+                            <text x="340" y="166" font-family="Prompt" font-size="14" font-weight="bold" fill="#FFFFFF" text-anchor="middle" id="svgRhsText">RHS: 11</text>
+                        </g>
+                    </svg>
+
+                    <!-- Status Message Banner -->
+                    <div id="statusBadge" class="mt-2 w-full text-center py-2.5 px-4 rounded-xl font-bold transition-all duration-300 flex items-center justify-center gap-2">
+                        <span id="statusIcon"></span>
+                        <span id="statusText">ลองปรับค่า x ด้านล่าง</span>
+                    </div>
+                </div>
+
+                <!-- Controls & Step-by-Step Calculation (Right Side) -->
+                <div class="lg:col-span-5 space-y-5">
+                    
+                    <!-- Current Equation Box -->
+                    <div class="text-center p-3 bg-indigo-50 rounded-2xl border border-indigo-100">
+                        <span class="text-xs text-indigo-500 font-bold uppercase tracking-wider">สมการปัจจุบัน</span>
+                        <div id="equationDisplay" class="text-2xl font-black text-indigo-900 mt-0.5">2x + 3 = 11</div>
+                    </div>
+
+                    <!-- Variable Slider Controls -->
+                    <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+                        <div class="flex justify-between items-center">
+                            <label class="font-bold text-slate-700 flex items-center gap-2">
+                                <i class="fa-solid fa-sliders text-indigo-600"></i> ปรับค่าตัวแปร x:
+                            </label>
+                            <span id="xValueDisplay" class="text-2xl font-black text-indigo-600 px-3 py-0.5 bg-indigo-50 rounded-xl border border-indigo-100">0</span>
+                        </div>
+
+                        <!-- Range Slider -->
+                        <input type="range" id="xSlider" min="-5" max="15" value="0" step="1" class="w-full accent-indigo-600 h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer">
+
+                        <!-- Quick Step Buttons -->
+                        <div class="flex gap-2 pt-1">
+                            <button id="btnMinus" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2 rounded-xl border border-slate-300 transition active:scale-95 text-sm flex items-center justify-center gap-1">
+                                <i class="fa-solid fa-minus"></i> ลด (-1)
+                            </button>
+                            <button id="btnPlus" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2 rounded-xl border border-slate-300 transition active:scale-95 text-sm flex items-center justify-center gap-1">
+                                <i class="fa-solid fa-plus"></i> เพิ่ม (+1)
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Substitution Steps Box -->
+                    <div class="bg-slate-900 text-slate-100 p-4 rounded-2xl space-y-2 text-sm shadow-inner font-mono">
+                        <div class="text-xs text-indigo-400 font-sans font-bold uppercase border-b border-slate-800 pb-1 mb-2">
+                            <i class="fa-solid fa-code"></i> ขั้นตอนการแทนค่า (Step-by-Step)
+                        </div>
+                        <p id="step1" class="text-slate-300">แทนค่า x = 0 ใน 2x + 3</p>
+                        <p id="step2" class="text-amber-300 font-semibold">ฝั่งซ้าย (LHS) = 2(0) + 3 = 3</p>
+                        <p id="step3" class="text-pink-300 font-semibold">ฝั่งขวา (RHS) = 11</p>
+                        <div id="step4" class="pt-2 border-t border-slate-800 font-sans font-bold text-red-400 flex items-center gap-2">
+                            <i class="fa-solid fa-circle-xmark"></i> 3 ≠ 11  สมการเป็นเท็จ
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+        </section>
+
+        <!-- Section 2: Quiz Assessment -->
+        <section class="bg-white rounded-3xl shadow-md border border-slate-100 overflow-hidden">
+            <div class="bg-gradient-to-r from-emerald-600 to-teal-600 text-white px-6 py-4 flex items-center gap-2">
+                <i class="fa-solid fa-pen-to-square text-xl"></i>
+                <h2 class="text-lg font-bold">แบบทดสอบท้ายกิจกรรม (ประเมินความเข้าใจ 3 ข้อ)</h2>
+            </div>
+
+            <div class="p-6 space-y-8">
+
+                <!-- Question 1 -->
+                <div class="p-5 rounded-2xl border border-slate-200 bg-slate-50/50 space-y-4">
+                    <div class="flex items-start gap-3">
+                        <span class="bg-emerald-600 text-white font-bold w-7 h-7 rounded-full flex items-center justify-center text-sm shrink-0 mt-0.5">1</span>
+                        <p class="font-bold text-slate-800 text-base md:text-lg">
+                            ข้อใดคือคำตอบของสมการ <span class="text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md border border-indigo-100">4x - 5 = 7</span> ?
+                        </p>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pl-0 sm:pl-10">
+                        <label class="flex items-center gap-3 p-3 bg-white border border-slate-200 rounded-xl cursor-pointer hover:border-emerald-500 hover:bg-emerald-50/30 transition">
+                            <input type="radio" name="q1" value="2" class="w-4 h-4 text-emerald-600 accent-emerald-600">
+                            <span class="font-medium text-slate-700">ก. x = 2</span>
+                        </label>
+                        <label class="flex items-center gap-3 p-3 bg-white border border-slate-200 rounded-xl cursor-pointer hover:border-emerald-500 hover:bg-emerald-50/30 transition">
+                            <input type="radio" name="q1" value="3" class="w-4 h-4 text-emerald-600 accent-emerald-600">
+                            <span class="font-medium text-slate-700">ข. x = 3</span>
+                        </label>
+                        <label class="flex items-center gap-3 p-3 bg-white border border-slate-200 rounded-xl cursor-pointer hover:border-emerald-500 hover:bg-emerald-50/30 transition">
+                            <input type="radio" name="q1" value="4" class="w-4 h-4 text-emerald-600 accent-emerald-600">
+                            <span class="font-medium text-slate-700">ค. x = 4</span>
+                        </label>
+                        <label class="flex items-center gap-3 p-3 bg-white border border-slate-200 rounded-xl cursor-pointer hover:border-emerald-500 hover:bg-emerald-50/30 transition">
+                            <input type="radio" name="q1" value="5" class="w-4 h-4 text-emerald-600 accent-emerald-600">
+                            <span class="font-medium text-slate-700">ง. x = 5</span>
+                        </label>
+                    </div>
+                    <div id="explain-q1" class="hidden pl-0 sm:pl-10 p-4 rounded-xl text-sm leading-relaxed"></div>
+                </div>
+
+                <!-- Question 2 -->
+                <div class="p-5 rounded-2xl border border-slate-200 bg-slate-50/50 space-y-4">
+                    <div class="flex items-start gap-3">
+                        <span class="bg-emerald-600 text-white font-bold w-7 h-7 rounded-full flex items-center justify-center text-sm shrink-0 mt-0.5">2</span>
+                        <p class="font-bold text-slate-800 text-base md:text-lg">
+                            เมื่อแทนค่า <span class="text-indigo-600 font-bold">x = 3</span> ในสมการ <span class="text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md border border-indigo-100">5x + 2 = 17</span> สมการจะเป็นจริงหรือเท็จ?
+                        </p>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pl-0 sm:pl-10">
+                        <label class="flex items-center gap-3 p-3 bg-white border border-slate-200 rounded-xl cursor-pointer hover:border-emerald-500 hover:bg-emerald-50/30 transition">
+                            <input type="radio" name="q2" value="true" class="w-4 h-4 text-emerald-600 accent-emerald-600">
+                            <span class="font-medium text-slate-700">ก. เป็นจริง</span>
+                        </label>
+                        <label class="flex items-center gap-3 p-3 bg-white border border-slate-200 rounded-xl cursor-pointer hover:border-emerald-500 hover:bg-emerald-50/30 transition">
+                            <input type="radio" name="q2" value="false" class="w-4 h-4 text-emerald-600 accent-emerald-600">
+                            <span class="font-medium text-slate-700">ข. เป็นเท็จ</span>
+                        </label>
+                    </div>
+                    <div id="explain-q2" class="hidden pl-0 sm:pl-10 p-4 rounded-xl text-sm leading-relaxed"></div>
+                </div>
+
+                <!-- Question 3 -->
+                <div class="p-5 rounded-2xl border border-slate-200 bg-slate-50/50 space-y-4">
+                    <div class="flex items-start gap-3">
+                        <span class="bg-emerald-600 text-white font-bold w-7 h-7 rounded-full flex items-center justify-center text-sm shrink-0 mt-0.5">3</span>
+                        <p class="font-bold text-slate-800 text-base md:text-lg">
+                            สมการ <span class="text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md border border-indigo-100">12 - 2x = 6</span> มีคำตอบคือเท่าใด?
+                        </p>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pl-0 sm:pl-10">
+                        <label class="flex items-center gap-3 p-3 bg-white border border-slate-200 rounded-xl cursor-pointer hover:border-emerald-500 hover:bg-emerald-50/30 transition">
+                            <input type="radio" name="q3" value="2" class="w-4 h-4 text-emerald-600 accent-emerald-600">
+                            <span class="font-medium text-slate-700">ก. x = 2</span>
+                        </label>
+                        <label class="flex items-center gap-3 p-3 bg-white border border-slate-200 rounded-xl cursor-pointer hover:border-emerald-500 hover:bg-emerald-50/30 transition">
+                            <input type="radio" name="q3" value="3" class="w-4 h-4 text-emerald-600 accent-emerald-600">
+                            <span class="font-medium text-slate-700">ข. x = 3</span>
+                        </label>
+                        <label class="flex items-center gap-3 p-3 bg-white border border-slate-200 rounded-xl cursor-pointer hover:border-emerald-500 hover:bg-emerald-50/30 transition">
+                            <input type="radio" name="q3" value="4" class="w-4 h-4 text-emerald-600 accent-emerald-600">
+                            <span class="font-medium text-slate-700">ค. x = 4</span>
+                        </label>
+                        <label class="flex items-center gap-3 p-3 bg-white border border-slate-200 rounded-xl cursor-pointer hover:border-emerald-500 hover:bg-emerald-50/30 transition">
+                            <input type="radio" name="q3" value="6" class="w-4 h-4 text-emerald-600 accent-emerald-600">
+                            <span class="font-medium text-slate-700">ง. x = 6</span>
+                        </label>
+                    </div>
+                    <div id="explain-q3" class="hidden pl-0 sm:pl-10 p-4 rounded-xl text-sm leading-relaxed"></div>
+                </div>
+
+                <!-- Submit Button & Result Score -->
+                <div class="flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-slate-200 pt-6">
+                    <button id="btnCheckQuiz" class="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-8 py-3.5 rounded-xl shadow-lg shadow-emerald-600/20 transition active:scale-95 text-base flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-check-double"></i> ตรวจคำตอบทั้งหมด
+                    </button>
+                    <div id="quizScoreBadge" class="hidden text-slate-800 font-bold text-lg px-4 py-2 bg-slate-100 rounded-xl border border-slate-200">
+                        คะแนนของคุณ: <span id="scoreText" class="text-emerald-600 text-xl font-black">0</span> / 3
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="mt-12 text-center text-slate-500 text-sm">
+        <p>สื่อการเรียนรู้แบบโต้ตอบวิชาคณิตศาสตร์ สำหรับนักเรียนชั้นมัธยมศึกษาปีที่ 1</p>
+    </footer>
+
+    <!-- Interactive Logic Script -->
+    <script>
+        // Preset Equations Configuration
+        const equations = [
+            {
+                text: "2x + 3 = 11",
+                lhsStr: "2x + 3",
+                calcLhs: (x) => 2 * x + 3,
+                rhs: 11,
+                solution: 4,
+                minX: -2,
+                maxX: 10,
+                defaultX: 0
+            },
+            {
+                text: "3x - 4 = 5",
+                lhsStr: "3x - 4",
+                calcLhs: (x) => 3 * x - 4,
+                rhs: 5,
+                solution: 3,
+                minX: -2,
+                maxX: 8,
+                defaultX: 0
+            },
+            {
+                text: "15 - x = 8",
+                lhsStr: "15 - x",
+                calcLhs: (x) => 15 - x,
+                rhs: 8,
+                solution: 7,
+                minX: 0,
+                maxX: 15,
+                defaultX: 2
+            },
+            {
+                text: "4x + 2 = 18",
+                lhsStr: "4x + 2",
+                calcLhs: (x) => 4 * x + 2,
+                rhs: 18,
+                solution: 4,
+                minX: -2,
+                maxX: 8,
+                defaultX: 1
+            }
+        ];
+
+        let currentEqIndex = 0;
+
+        // DOM Elements
+        const eqSelect = document.getElementById('eqSelect');
+        const equationDisplay = document.getElementById('equationDisplay');
+        const xSlider = document.getElementById('xSlider');
+        const xValueDisplay = document.getElementById('xValueDisplay');
+        const btnMinus = document.getElementById('btnMinus');
+        const btnPlus = document.getElementById('btnPlus');
+
+        // SVG Elements
+        const scaleArm = document.getElementById('scaleArm');
+        const leftPan = document.getElementById('leftPan');
+        const rightPan = document.getElementById('rightPan');
+        const svgLhsText = document.getElementById('svgLhsText');
+        const svgRhsText = document.getElementById('svgRhsText');
+
+        // Step Display Elements
+        const step1 = document.getElementById('step1');
+        const step2 = document.getElementById('step2');
+        const step3 = document.getElementById('step3');
+        const step4 = document.getElementById('step4');
+        const statusBadge = document.getElementById('statusBadge');
+        const statusIcon = document.getElementById('statusIcon');
+        const statusText = document.getElementById('statusText');
+
+        // Update Display Function
+        function updateSimulation() {
+            const eq = equations[currentEqIndex];
+            const xVal = parseInt(xSlider.value);
+            const lhsVal = eq.calcLhs(xVal);
+            const rhsVal = eq.rhs;
+
+            // Update Text Displays
+            xValueDisplay.textContent = xVal;
+            svgLhsText.textContent = `LHS: ${lhsVal}`;
+            svgRhsText.textContent = `RHS: ${rhsVal}`;
+
+            // Update Steps
+            step1.textContent = `แทนค่า x = ${xVal} ใน ${eq.lhsStr}`;
+            step2.textContent = `ฝั่งซ้าย (LHS) = ${eq.lhsStr.replace('x', `(${xVal})`)} = ${lhsVal}`;
+            step3.textContent = `ฝั่งขวา (RHS) = ${rhsVal}`;
+
+            // Balance Scale Physics Animation Logic
+            // Angle between -18 and 18 degrees
+            let diff = lhsVal - rhsVal;
+            let angle = 0;
+            if (diff !== 0) {
+                angle = Math.max(-18, Math.min(18, diff * 2.5));
+            }
+
+            // Rotate Arm
+            scaleArm.style.transform = `rotate(${angle}deg)`;
+
+            // Keep Pans Horizontal (Counter-rotate & translate)
+            // Left pan anchor point: (60, 140)
+            // Right pan anchor point: (340, 140)
+            const rad = (angle * Math.PI) / 180;
+            
+            // Left pan displacement relative to rest center (0,0)
+            const ldx = 60 * (Math.cos(rad) - 1) + 140 * Math.sin(rad);
+            const ldy = -60 * Math.sin(rad) + 140 * (1 - Math.cos(rad));
+            leftPan.style.transform = `translate(${ldx}px, ${ldy}px)`;
+
+            // Right pan displacement
+            const rdx = 340 * (Math.cos(rad) - 1) + 140 * Math.sin(rad);
+            const rdy = -340 * Math.sin(rad) + 140 * (1 - Math.cos(rad));
+            rightPan.style.transform = `translate(${rdx}px, ${rdy}px)`;
+
+            // Status Badge and Step 4 Condition
+            if (lhsVal === rhsVal) {
+                // Balanced / True
+                step4.className = "pt-2 border-t border-slate-800 font-sans font-bold text-emerald-400 flex items-center gap-2";
+                step4.innerHTML = `<i class="fa-solid fa-circle-check"></i> ${lhsVal} = ${rhsVal} สมการเป็นจริง!`;
+
+                statusBadge.className = "mt-2 w-full text-center py-2.5 px-4 rounded-xl font-bold transition-all duration-300 flex items-center justify-center gap-2 bg-emerald-500 text-white shadow-lg shadow-emerald-500/30 animate-bounce";
+                statusIcon.className = "fa-solid fa-star text-yellow-300 text-lg";
+                statusText.textContent = `ตราชั่งสมดุล! x = ${xVal} คือคำตอบของสมการ`;
+            } else if (lhsVal < rhsVal) {
+                // LHS < RHS
+                step4.className = "pt-2 border-t border-slate-800 font-sans font-bold text-red-400 flex items-center gap-2";
+                step4.innerHTML = `<i class="fa-solid fa-circle-xmark"></i> ${lhsVal} < ${rhsVal} สมการเป็นเท็จ`;
+
+                statusBadge.className = "mt-2 w-full text-center py-2.5 px-4 rounded-xl font-bold transition-all duration-300 flex items-center justify-center gap-2 bg-amber-500 text-white";
+                statusIcon.className = "fa-solid fa-arrow-right text-white";
+                statusText.textContent = `ฝั่งขวากว่า (LHS < RHS) ลองเพิ่มค่า x`;
+            } else {
+                // LHS > RHS
+                step4.className = "pt-2 border-t border-slate-800 font-sans font-bold text-red-400 flex items-center gap-2";
+                step4.innerHTML = `<i class="fa-solid fa-circle-xmark"></i> ${lhsVal} > ${rhsVal} สมการเป็นเท็จ`;
+
+                statusBadge.className = "mt-2 w-full text-center py-2.5 px-4 rounded-xl font-bold transition-all duration-300 flex items-center justify-center gap-2 bg-amber-500 text-white";
+                statusIcon.className = "fa-solid fa-arrow-left text-white";
+                statusText.textContent = `ฝั่งซ้ายหนักกว่า (LHS > RHS) ลองลดค่า x`;
+            }
+        }
+
+        // Change Selected Equation
+        eqSelect.addEventListener('change', (e) => {
+            currentEqIndex = parseInt(e.target.value);
+            const eq = equations[currentEqIndex];
+            equationDisplay.textContent = eq.text;
+            xSlider.min = eq.minX;
+            xSlider.max = eq.maxX;
+            xSlider.value = eq.defaultX;
+            updateSimulation();
+        });
+
+        // Slider Input Event
+        xSlider.addEventListener('input', updateSimulation);
+
+        // Increment / Decrement Buttons
+        btnMinus.addEventListener('click', () => {
+            if (parseInt(xSlider.value) > parseInt(xSlider.min)) {
+                xSlider.value = parseInt(xSlider.value) - 1;
+                updateSimulation();
+            }
+        });
+
+        btnPlus.addEventListener('click', () => {
+            if (parseInt(xSlider.value) < parseInt(xSlider.max)) {
+                xSlider.value = parseInt(xSlider.value) + 1;
+                updateSimulation();
+            }
+        });
+
+        // Initialize Simulation on Load
+        updateSimulation();
+
+        // -------------------------------------------------------------
+        // Quiz System Logic
+        // -------------------------------------------------------------
+        const quizAnswers = {
+            q1: "3", // 4(3) - 5 = 7
+            q2: "true", // 5(3) + 2 = 17
+            q3: "3"  // 12 - 2(3) = 6
+        };
+
+        const quizExplanations = {
+            q1: `<strong>เฉลย: ข. x = 3</strong><br/>
+                 - แทนค่า x = 3: ฝั่งซ้าย = 4(3) - 5 = 12 - 5 = 7 (เท่ากับฝั่งขวาพอดี!)<br/>
+                 - หากแทน x = 2: ฝั่งซ้าย = 4(2) - 5 = 3 ≠ 7 (เป็นเท็จ)`,
+            
+            q2: `<strong>เฉลย: ก. เป็นจริง</strong><br/>
+                 - แทนค่า x = 3 ใน 5x + 2<br/>
+                 - จะได้ ฝั่งซ้าย = 5(3) + 2 = 15 + 2 = 17<br/>
+                 - ซึ่งเท่ากับฝั่งขวา (17) ดังนั้น สมการเป็นจริง`,
+            
+            q3: `<strong>เฉลย: ข. x = 3</strong><br/>
+                 - แทนค่า x = 3 ใน 12 - 2x<br/>
+                 - จะได้ ฝั่งซ้าย = 12 - 2(3) = 12 - 6 = 6<br/>
+                 - เท่ากับฝั่งขวา (6) ดังนั้น x = 3 เป็นคำตอบของสมการ`
+        };
+
+        const btnCheckQuiz = document.getElementById('btnCheckQuiz');
+        const quizScoreBadge = document.getElementById('quizScoreBadge');
+        const scoreText = document.getElementById('scoreText');
+
+        btnCheckQuiz.addEventListener('click', () => {
+            let score = 0;
+            let answeredAll = true;
+
+            ['q1', 'q2', 'q3'].forEach((qKey, index) => {
+                const selected = document.querySelector(`input[name="${qKey}"]:checked`);
+                const explainDiv = document.getElementById(`explain-${qKey}`);
+                explainDiv.classList.remove('hidden', 'bg-red-50', 'text-red-800', 'border-red-200', 'bg-emerald-50', 'text-emerald-800', 'border-emerald-200');
+                explainDiv.classList.add('border');
+
+                if (!selected) {
+                    answeredAll = false;
+                    explainDiv.classList.add('bg-amber-50', 'text-amber-800', 'border-amber-200');
+                    explainDiv.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> กรุณาเลือกคำตอบสำหรับข้อนี้ก่อนตรวจนะครับ`;
+                } else if (selected.value === quizAnswers[qKey]) {
+                    score++;
+                    explainDiv.classList.add('bg-emerald-50', 'text-emerald-800', 'border-emerald-200');
+                    explainDiv.innerHTML = `<div class="font-bold text-emerald-700 mb-1"><i class="fa-solid fa-circle-check"></i> ถูกต้อง!</div>${quizExplanations[qKey]}`;
+                } else {
+                    explainDiv.classList.add('bg-red-50', 'text-red-800', 'border-red-200');
+                    explainDiv.innerHTML = `<div class="font-bold text-red-700 mb-1"><i class="fa-solid fa-circle-xmark"></i> ยังไม่ถูกต้อง</div>${quizExplanations[qKey]}`;
+                }
+            });
+
+            if (answeredAll) {
+                quizScoreBadge.classList.remove('hidden');
+                scoreText.textContent = score;
+            } else {
+                quizScoreBadge.classList.add('hidden');
+            }
+        });
+    </script>
+</body>
+</html>
